@@ -3,6 +3,8 @@ import numpy as np
 from tensorflow.keras.models import load_model
 from PIL import Image
 import difflib
+import os
+import gdown
 
 # Set page config
 st.set_page_config(
@@ -54,11 +56,15 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# Cache model loading for faster reloads
+# Download & load model from Google Drive if not already downloaded
 @st.cache_resource
 def load_model_cached():
-    return load_model('best_model3.h5')
-
+    model_path = "best_model3.h5"
+    if not os.path.exists(model_path):
+        with st.spinner("Downloading model..."):
+            url = "https://drive.google.com/uc?id=1yOurNIqndB-8jmtbOu-fYIysxdhBYwln"
+            gdown.download(url, model_path, quiet=False)
+    return load_model(model_path)
 
 model = load_model_cached()
 
@@ -121,7 +127,6 @@ if uploaded_file:
                 result, predicted_brand, confidence = predict_logo(uploaded_file, brand_name)
 
             if result is None:
-                # Prediction error already handled inside predict_logo
                 pass
             else:
                 if confidence < 0.5:
